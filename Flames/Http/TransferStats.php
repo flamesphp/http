@@ -1,0 +1,102 @@
+<?php
+declare(strict_types=1);
+
+
+// HttpGuzzle fork: https://github.com/guzzle/guzzle
+
+namespace Flames\Http;
+
+use Flames\Http\Psr\Http\Message\RequestInterface;
+use Flames\Http\Psr\Http\Message\ResponseInterface;
+use Flames\Http\Psr\Http\Message\UriInterface;
+
+/**
+ * Represents data at the point after it was transferred either successfully
+ * or after a network error.
+ */
+final class TransferStats
+{
+    /**
+     * @param RequestInterface       $request          Request that was sent.
+     * @param ResponseInterface|null $response         Response received (if any)
+     * @param float|null             $transferTime     Total handler transfer time.
+     * @param mixed                  $handlerErrorData Handler error data.
+     * @param array                  $handlerStats     Handler specific stats.
+     */
+    public function __construct(private readonly RequestInterface $request, private readonly ?\Flames\Http\Psr\Http\Message\ResponseInterface $response = null, private readonly ?float $transferTime = null, private $handlerErrorData = null, private array $handlerStats = [])
+    {
+    }
+
+    public function getRequest(): RequestInterface
+    {
+        return $this->request;
+    }
+
+    /**
+     * Returns the response that was received (if any).
+     */
+    public function getResponse(): ?ResponseInterface
+    {
+        return $this->response;
+    }
+
+    /**
+     * Returns true if a response was received.
+     */
+    public function hasResponse(): bool
+    {
+        return $this->response !== null;
+    }
+
+    /**
+     * Gets handler specific error data.
+     *
+     * This might be an exception, a integer representing an error code, or
+     * anything else. Relying on this value assumes that you know what handler
+     * you are using.
+     *
+     * @return mixed
+     */
+    public function getHandlerErrorData()
+    {
+        return $this->handlerErrorData;
+    }
+
+    /**
+     * Get the effective URI the request was sent to.
+     */
+    public function getEffectiveUri(): UriInterface
+    {
+        return $this->request->getUri();
+    }
+
+    /**
+     * Get the estimated time the request was being transferred by the handler.
+     *
+     * @return float|null Time in seconds.
+     */
+    public function getTransferTime(): ?float
+    {
+        return $this->transferTime;
+    }
+
+    /**
+     * Gets an array of all of the handler specific transfer data.
+     */
+    public function getHandlerStats(): array
+    {
+        return $this->handlerStats;
+    }
+
+    /**
+     * Get a specific handler statistic from the handler by name.
+     *
+     * @param string $stat Handler specific transfer stat to retrieve.
+     *
+     * @return mixed|null
+     */
+    public function getHandlerStat(string $stat)
+    {
+        return $this->handlerStats[$stat] ?? null;
+    }
+}
